@@ -1,0 +1,75 @@
+body {
+    font-family: sans-serif;
+    margin: 20px;
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+.container {
+    max-width: 800px;
+    margin: auto;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    color: #333;
+    text-align: center;
+}
+
+#uploadForm {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #eee;
+    border-radius: 5px;
+}
+
+#uploadForm input[type="file"] {
+    margin-right: 10px;
+}
+
+#uploadForm button {
+    padding: 10px 15px;
+    background-color: #5cb85c;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#uploadForm button:hover {
+    background-color: #4cae4c;
+}
+
+#proposalResult {
+    margin-top: 20px;
+    padding: 15px;
+    border: 1px solid #ddd;
+    background-color: #f9f9f9;
+    min-height: 100px; /* Or remove if dynamic height is preferred */
+}
+
+#proposalResult h3 {
+    margin-top: 10px;
+    color: #333;
+}
+
+#proposalResult p {
+    margin-bottom: 10px;
+    line-height: 1.6;
+}
+
+#proposalResult pre { /* For file content preview */
+    background-color: #eee;
+    padding: 10px;
+    border-radius: 4px;
+    white-space: pre-wrap; /* Handles long lines */
+    word-wrap: break-word; /* Breaks long words if necessary */
+}
+
+.error {
+    color: red;
+    font-weight: bold;
+}

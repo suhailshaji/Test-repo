@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Software Proposal Generator</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>AI Software Proposal Generator</h1>
+        <form id="uploadForm" enctype="multipart/form-data">
+            <input type="file" name="requirementsFile" id="requirementsFile" accept=".txt,.md,.pdf">
+            <button type="submit">Generate Proposal</button>
+        </form>
+        <div id="proposalResult">
+            <!-- Proposal will be displayed here -->
+        </div>
+    </div>
+
+    <script>
+        // Get references to the DOM elements.
+        const uploadForm = document.getElementById('uploadForm'); // The form itself.
+        const proposalResultDiv = document.getElementById('proposalResult'); // The div where results are displayed.
+        const requirementsFile = document.getElementById('requirementsFile'); // The file input field.
+
+        // Add an event listener for the form submission.
+        uploadForm.addEventListener('submit', async (event) => {
+            event.preventDefault(); // Prevent the default form submission which would reload the page.
+            proposalResultDiv.innerHTML = ''; // Clear any previous results from the display area.
+
+            const file = requirementsFile.files[0]; // Get the first file selected by the user.
+            // Check if a file was actually selected.
+            if (!file) {
+                proposalResultDiv.innerHTML = '<p class="error">Please select a file.</p>'; // Show error if no file.
+                return; // Stop further execution.
+            }
+
+            // Create a FormData object to prepare the file for sending.
+            // FormData is used to construct a set of key/value pairs representing form fields and their values,
+            // which can then be easily sent using the fetch API.
+            const formData = new FormData();
+            formData.append('requirementsFile', file); // Append the file to the FormData object. 'requirementsFile' must match the name expected by the backend.
+
+            try {
+                // Make an asynchronous POST request to the backend API endpoint.
+                const response = await fetch('/api/upload', {
+                    method: 'POST', // HTTP method.
+                    body: formData, // The data to send (our file).
+                    // Headers are not explicitly set here for 'Content-Type' because
+                    // when using FormData with fetch, the browser automatically sets
+                    // 'Content-Type' to 'multipart/form-data' and includes the boundary.
+                });
+
+                // Check if the HTTP response status code is in the 200-299 range (successful).
+                if (response.ok) {
+                    const data = await response.json(); // Parse the JSON response from the server.
+                    
+                    // Check if the backend returned an error (e.g., file processing error).
+                    if (data.error) {
+                        proposalResultDiv.innerHTML = `<p class="error">Error: ${data.error} (Filename: ${data.fileName || 'N/A'})</p>`;
+                    } else {
+                        // If no error, build the HTML to display the proposal.
+                        let htmlResult = '<h2>Software Proposal</h2>';
+                        htmlResult += `<p><strong>File Name:</strong> ${data.fileName}</p>`;
+
+                        // Display file content preview if available.
+                        if (data.fileContentPreview) {
+                            htmlResult += '<h3>File Content Preview:</h3>';
+                            htmlResult += `<pre>${data.fileContentPreview}</pre>`;
+                        }
+
+                        // Display Introduction section.
+                        htmlResult += '<h3>1. Introduction</h3>';
+                        htmlResult += `<p>${data.introduction}</p>`;
+
+                        // Display Development Proposal section.
+                        htmlResult += '<h3>2. Development Proposal</h3>';
+                        if (data.developmentProposal) {
+                            htmlResult += `<h4>2.1. Proposed Solution</h4><p>${data.developmentProposal.proposedSolution}</p>`;
+                            htmlResult += `<h4>2.2. Scope of Work</h4><ul>`;
+                            data.developmentProposal.scopeOfWork.forEach(item => {
+                                htmlResult += `<li>${item}</li>`;
+                            });
+                            htmlResult += `</ul>`;
+                            htmlResult += `<h4>2.3. Timeline</h4><p>${data.developmentProposal.timeline}</p>`;
+                            htmlResult += `<h4>2.4. Deliverables</h4><ul>`;
+                            data.developmentProposal.deliverables.forEach(item => {
+                                htmlResult += `<li>${item}</li>`;
+                            });
+                            htmlResult += `</ul>`;
+                        }
+
+                        // Display Technical Proposal section.
+                        htmlResult += '<h3>3. Technical Proposal</h3>';
+                        if (data.technicalProposal) {
+                            htmlResult += `<h4>3.1. System Architecture</h4><p>${data.technicalProposal.systemArchitecture}</p>`;
+                            htmlResult += `<h4>3.2. Technology Stack</h4><ul>`;
+                            // Iterate over the technologyStack object and display each key-value pair.
+                            for (const [key, value] of Object.entries(data.technicalProposal.technologyStack)) {
+                                htmlResult += `<li><strong>${key.charAt(0).toUpperCase() + key.slice(1)}:</strong> ${value}</li>`;
+                            }
+                            htmlResult += `</ul>`;
+                            htmlResult += `<h4>3.3. Deployment</h4><p>${data.technicalProposal.deployment}</p>`;
+                        }
+                        
+                        // Display Overall Proposal Summary section.
+                        htmlResult += '<h3>4. Overall Proposal Summary</h3>';
+                        if (data.overallProposalSummary) {
+                            htmlResult += `<h4>4.1. Cost Estimation</h4><p>${data.overallProposalSummary.costEstimation}</p>`;
+                            htmlResult += `<h4>4.2. Next Steps</h4><p>${data.overallProposalSummary.nextSteps}</p>`;
+                        }
+                        // Set the inner HTML of the result div to the generated proposal.
+                        proposalResultDiv.innerHTML = htmlResult;
+                    }
+                } else {
+                    // If the server response was not ok (e.g., 400, 500 errors).
+                    const errorData = await response.json().catch(() => null); // Try to parse error JSON, but don't fail if it's not JSON.
+                    const errorMessage = errorData && errorData.error ? errorData.error : `Server error: ${response.status}`;
+                    proposalResultDiv.innerHTML = `<p class="error">${errorMessage}</p>`;
+                }
+            } catch (error) {
+                // Catch network errors or other issues with the fetch call itself.
+                proposalResultDiv.innerHTML = `<p class="error">Network error: ${error.message}</p>`;
+            }
+        });
+    </script>
+</body>
+</html>
