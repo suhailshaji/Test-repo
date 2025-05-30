@@ -1,6 +1,7 @@
 import os
 from flask import Flask, request, jsonify
-from backend.agent import generate_proposal
+# from backend.agent import generate_proposal # Old import
+from backend.crew_ai_processor import run_crew
 
 # Define the uploads directory path relative to this file.
 # It navigates up one level from 'backend' (where app.py is) to the project root,
@@ -42,11 +43,20 @@ def upload_file():
         filepath = os.path.join(UPLOADS_DIR_PATH, filename)
         # Save the uploaded file to the specified path.
         file.save(filepath)
+
+        # Read the content of the saved file
+        try:
+            with open(filepath, 'r', encoding='utf-8') as f:
+                requirements_content = f.read()
+        except Exception as e:
+            # Handle file reading error
+            return jsonify({"error": f"Failed to read uploaded file: {str(e)}"}), 500
         
-        # Call the agent function to generate the proposal based on the saved file.
-        proposal_data = generate_proposal(filepath)
+        # Call the CrewAI processor function to generate the proposal based on the file content.
+        # result = generate_proposal(filepath) # Old call
+        result = run_crew(requirements_content)
         # Return the proposal data as a JSON response.
-        return jsonify(proposal_data)
+        return jsonify(result)
 
 # Standard Python entry point.
 if __name__ == '__main__':

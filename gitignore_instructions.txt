@@ -1,0 +1,11 @@
+Please ensure that your project's .gitignore file includes at least the following lines to protect sensitive information and avoid committing unnecessary files:
+
+.env
+venv/
+__pycache__/
+*.pyc
+uploads/*
+!uploads/.gitkeep 
+# (uploads/* will ignore all contents, but !uploads/.gitkeep will make sure the empty dir can be tracked if needed)
+# If you don't want to track the uploads directory at all, just use:
+# uploads/
